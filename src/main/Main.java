@@ -1,28 +1,34 @@
-package Main;
+package main;
 
-import Collection.Collection;
-import Parser.*;
+import collection.Collection;
+import parser.*;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Main {
-    public static boolean workingStatus = true;
-
     public static void main(String[] args) {
         try {
+            boolean workingStatus = true;
             Scanner consoleIn = new Scanner(System.in);
             String currentCommand;
             String[] currentCommandSeparated;
             System.out.println("Добро пожаловать! Чтобы начать работу, введите нужную вам команду. \nДля просмотра списка команд введите help.");
 
-            Parser.parseFrom();
+            Collection collection = new Collection();
+
+            Parser.parseFrom(collection);
 
             while (workingStatus) {
                 currentCommand = consoleIn.nextLine();
-                currentCommandSeparated = currentCommand.trim().split(" ");
-
-                Collection.commandDefiner(currentCommandSeparated);
+                if(currentCommand.equals("exit")) {
+                    workingStatus = false;
+                } else {
+                    currentCommandSeparated = currentCommand.trim().split(" ");
+                    collection.commandDefiner(currentCommandSeparated);
+                }
             }
+
+            System.out.println("Работа программы завершена!");
         } catch (NoSuchElementException e) {
             System.out.println("Работа программы была принудительно прервана.");
         }

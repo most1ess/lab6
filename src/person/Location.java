@@ -1,4 +1,4 @@
-package Person;
+package person;
 
 public class Location {
     private Long x; //Поле не может быть null
