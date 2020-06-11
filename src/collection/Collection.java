@@ -184,7 +184,7 @@ public class Collection {
             insert.yLocation();
             insert.zLocation();
 
-            insert.genCreationDate();
+            insert.genCreationDate();   
             insert.applyToCollection();
 
             System.out.println("Объект успешно добавлен!");
