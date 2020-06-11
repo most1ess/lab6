@@ -9,33 +9,44 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.io.IOException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import collection.Collection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.TreeMap;
+
 import person.*;
 import org.w3c.dom.NodeList;
+import collection.Randomizer;
 public class Parser {
+
+    public Randomizer getRandomizer() {
+        return randomizer;
+    }
+
+    public void setRandomizer(Randomizer randomizer) {
+        this.randomizer = randomizer;
+    }
+
+    private Randomizer randomizer = new Randomizer();
 
     /**
      * Парсинг из файла.
      *
      * @param collection
      */
-    public static void parseFrom(Collection collection) {
+    public void parseFrom(Collection collection) {
         try {
-            if(System.getenv("FILE_PATH") == null) {
+           if(System.getenv("FILE_PATH") == null) {
                 System.out.println("Переменная окружения отсутствует! Коллекция не может быть загружена.");
                 return;
             }
@@ -45,8 +56,9 @@ public class Parser {
                 return;
             }
             File file = readFile(fileName);
-            TreeMap<Integer, Person> treeMap = new TreeMap<>();
-            Integer key = 0;
+            TreeMap<String, Person> treeMap = new TreeMap<>();
+            String key = "";
+            randomizer.setIdMax(0);
             if (file.canRead()) {
                 DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 Document document = documentBuilder.parse(file);
@@ -57,7 +69,7 @@ public class Parser {
                 NodeList people = root.getChildNodes();
 
                 Integer[] ids = new Integer[people.getLength()];
-                Integer[] keys = new Integer[people.getLength()];
+                String[] keys = new String[people.getLength()];
                 int currenIdAmount = 0;
                 int currentKeyAmount = 0;
                 for (int i = 0; i < people.getLength(); i++) {
@@ -80,13 +92,13 @@ public class Parser {
                                     }
                                     boolean isKeyGood = true;
                                     for (int keyCounter = 0; keyCounter < currenIdAmount; keyCounter++) {
-                                        if (Integer.parseInt(textContent) == keys[keyCounter]) {
+                                        if (textContent.equals(keys[keyCounter])) {
                                             System.out.println("Ключи нескольких элементов совпадают! Коллекция не может быть загружена.");
                                             isKeyGood = false;
                                         }
                                     }
                                     if (isKeyGood) {
-                                        key = Integer.valueOf(textContent);
+                                        key = textContent;
                                         keys[currentKeyAmount] = key;
                                         currentKeyAmount++;
                                     } else {
@@ -110,6 +122,10 @@ public class Parser {
                                         e.setId(Integer.valueOf(textContent));
                                         ids[currenIdAmount] = e.getId();
                                         currenIdAmount++;
+                                        if(randomizer.getIdMax() < e.getId()) {
+                                            randomizer.setIdMax(e.getId());
+                                        }
+                                        System.out.println(randomizer.getIdMax());
                                     } else {
                                         return;
                                     }
@@ -219,7 +235,7 @@ public class Parser {
                                     e.setLocation(location);
                             }
                         }
-                        treeMap.put(key, e);
+                        treeMap.put(key.toString(), e);
                     }
                 }
                 collection.setPeople(treeMap);
@@ -234,7 +250,7 @@ public class Parser {
         }
     }
 
-    private static File readFile(String fileName) {
+    private File readFile(String fileName) {
         File tempFile = new File("/tmp/virtualReadingFile");
         try {
             Scanner scanner = new Scanner(new File(fileName));
@@ -260,7 +276,7 @@ public class Parser {
      *
      * @param treeMap
      */
-    public static void parseTo(TreeMap<Integer, Person> treeMap) {
+    public void parseTo(TreeMap<String, Person> treeMap) {
         try {
             String fileName = System.getenv("FILE_PATH");
             File file = new File("data.xml");
@@ -274,9 +290,9 @@ public class Parser {
 
                 Node root = document.getDocumentElement();
 
-                Iterator<Entry<Integer, Person>> iterator = treeMap.entrySet().iterator();
+                Iterator<Entry<String, Person>> iterator = treeMap.entrySet().iterator();
                 while (iterator.hasNext()) {
-                    Map.Entry<Integer, Person> entry = iterator.next();
+                    Map.Entry<String, Person> entry = iterator.next();
 
                     Element person = document.createElement("PERSON");
 

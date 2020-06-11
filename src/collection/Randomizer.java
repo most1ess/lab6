@@ -8,6 +8,7 @@ import java.util.TreeMap;
 
 public class Randomizer {
     private boolean isIdGenerated;
+    private Integer idMax = 0;
     private Integer id;
     private Iterator<Map.Entry<Integer, Person>> iterator;
 
@@ -20,25 +21,17 @@ public class Randomizer {
      * @param People
      * @return
      */
-    public Integer generateId(TreeMap<Integer, Person> People) {
-        while(!isIdGenerated) {
-            id = randomize();
-            iterator = People.entrySet().iterator();
-            while(iterator.hasNext()) {
-                Map.Entry<Integer, Person> entry = iterator.next();
-                if(!entry.getKey().equals(id)) {
-                    isIdGenerated = true;
-                }
-            }
-        }
+    public Integer generateId(TreeMap<String, Person> People) {
+        idMax++;
+        id = idMax;
         return id;
     }
 
-    /**
-     * Генерация рандомного числа от 1 до 50000.
-     * @return
-     */
-    private Integer randomize() {
-        return 1 + (int) (Math.random() * 50000);
+    public Integer getIdMax() {
+        return idMax;
+    }
+
+    public void setIdMax(Integer idMax) {
+        this.idMax = idMax;
     }
 }

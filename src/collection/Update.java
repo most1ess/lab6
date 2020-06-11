@@ -10,7 +10,7 @@ import java.util.Scanner;
 import java.util.TreeMap;
 
 public class Update {
-    private TreeMap<Integer, Person> People;
+    private TreeMap<String, Person> People;
     private Person person;
     private Scanner parameterInput;
     private Coordinates coordinates;
@@ -18,10 +18,10 @@ public class Update {
     private String key;
     private boolean isValueWritten;
 
-    public Update(String key, TreeMap<Integer, Person> People) {
+    public Update(String key, TreeMap<String, Person> People) {
         this.key = key;
         this.People = People;
-        person = People.get(Integer.valueOf(key));
+        person = People.get(key);
         parameterInput = new Scanner(System.in);
         coordinates = person.getCoordinates();
         location = person.getLocation();
@@ -224,6 +224,6 @@ public class Update {
     }
 
     public void applyToCollection() {
-        People.put(Integer.valueOf(key), person);
+        People.put(key, person);
     }
 }

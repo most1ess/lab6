@@ -6,13 +6,24 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Map.Entry;
+
 import parser.*;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class Collection {
 
-    private TreeMap<Integer, Person> People = new TreeMap<>();
+    public Parser getParser() {
+        return parser;
+    }
+
+    public void setParser(Parser parser) {
+        this.parser = parser;
+    }
+
+    private Parser parser = new Parser();
+    private TreeMap<String, Person> People = new TreeMap<>();
 
     private java.time.LocalDateTime creationDate;
     private boolean scriptExecutionStatus = false;
@@ -119,10 +130,10 @@ public class Collection {
      * Вывод элементов коллекции.
      */
     public void show() {
-        Iterator<Entry<Integer, Person>> iterator = People.entrySet().iterator();
+        Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
         while (iterator.hasNext()) {
             System.out.println();
-            Map.Entry<Integer, Person> entry = iterator.next();
+            Map.Entry<String, Person> entry = iterator.next();
             System.out.println("Ключ элемента: " + entry.getKey());
             System.out.println("ID: " + entry.getValue().getId());
             System.out.println("Имя: " + entry.getValue().getName());
@@ -150,39 +161,35 @@ public class Collection {
      * @param key
      */
     public void insert(String key) {
-        if (Integer.parseInt(key) < 1 || Integer.parseInt(key) > 50000) {
-            System.out.println("Ключ должен находиться в пределах от 1 до 50000. Попробуйте ввести другой ключ.");
+        Iterator<Map.Entry<String, Person>> iterator = People.entrySet().iterator();
+        boolean isIdGood = true;
+        while (iterator.hasNext() & isIdGood) {
+            Map.Entry<String, Person> entry = iterator.next();
+            if (entry.getKey().equals(key)) {
+                isIdGood = false;
+            }
+        }
+        if (isIdGood) {
+            Insert insert = new Insert(key, People);
+
+            insert.id(parser);
+            insert.name();
+            insert.xCoordinate();
+            insert.yCoordinate();
+            insert.height();
+            insert.birthday();
+            insert.weight();
+            insert.nationality();
+            insert.xLocation();
+            insert.yLocation();
+            insert.zLocation();
+
+            insert.genCreationDate();
+            insert.applyToCollection();
+
+            System.out.println("Объект успешно добавлен!");
         } else {
-            Iterator<Map.Entry<Integer, Person>> iterator = People.entrySet().iterator();
-            boolean isIdGood = true;
-            while (iterator.hasNext() & isIdGood) {
-                Map.Entry<Integer, Person> entry = iterator.next();
-                if (entry.getKey().equals(Integer.valueOf(key))) {
-                    isIdGood = false;
-                }
-            }
-            if (isIdGood) {
-                Insert insert = new Insert(key, People);
-
-                insert.id();
-                insert.name();
-                insert.xCoordinate();
-                insert.yCoordinate();
-                insert.height();
-                insert.birthday();
-                insert.weight();
-                insert.nationality();
-                insert.xLocation();
-                insert.yLocation();
-                insert.zLocation();
-
-                insert.genCreationDate();
-                insert.applyToCollection();
-
-                System.out.println("Объект успешно добавлен!");
-            } else {
-                System.out.println("Элемент с таким ключом уже есть в коллекции! Попробуйте ввести другой ключ.");
-            }
+            System.out.println("Элемент с таким ключом уже есть в коллекции! Попробуйте ввести другой ключ.");
         }
     }
 
@@ -194,7 +201,7 @@ public class Collection {
      */
     public void update(String key) {
 
-        if (!People.containsKey(Integer.valueOf(key))) {
+        if (!People.containsKey(key)) {
             System.out.println("Элемента с таким ключом нет в коллекции! Попробуйте ввести другой ключ.");
         } else {
             Update update = new Update(key, People);
@@ -223,10 +230,10 @@ public class Collection {
      * @param key
      */
     public void removeKey(String key) {
-        if (!People.containsKey(Integer.valueOf(key))) {
+        if (!People.containsKey(key)) {
             System.out.println("Элемента с таким ключом нет в коллекции! Попробуйте ввести другой ключ.");
         } else {
-            People.remove(Integer.valueOf(key));
+            People.remove(key);
             System.out.println("Элемент с ключом " + key + " успешно удален!");
         }
     }
@@ -236,8 +243,11 @@ public class Collection {
      */
     public void clear() {
         try {
-            People.tailMap(People.firstKey() - 1).clear();
-            System.out.println("Коллекция была успешно очищена!");
+            Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Person> entry = iterator.next();
+                People.remove(entry.getKey());
+            }
         } catch (NoSuchElementException e) {
             System.out.println("Невозможно очистить коллекцию. Она уже чиста.");
         }
@@ -247,7 +257,8 @@ public class Collection {
      * Сохранение коллекции в файл.
      */
     public void save() {
-        Parser.parseTo(People);
+        Parser parser = new Parser();
+        parser.parseTo(People);
     }
 
     /**
@@ -276,7 +287,7 @@ public class Collection {
                     separatedLine = line.trim().split(" ");
                     switch (separatedLine[0]) {
                         case "update":
-                            People.remove(Integer.valueOf(separatedLine[1]));
+                            People.remove(separatedLine[1]);
                         case "insert":
                             Person person = new Person();
                             Randomizer idRandomizer = new Randomizer();
@@ -318,7 +329,7 @@ public class Collection {
 
                             person.setCreationDate(java.time.LocalDateTime.now().withNano(0).withSecond(0).toString().replace("T", " "));
 
-                            People.put(Integer.parseInt(separatedLine[1]), person);
+                            People.put(separatedLine[1], person);
                             break;
                         default:
                             commandDefiner(separatedLine);
@@ -343,7 +354,7 @@ public class Collection {
         } else {
             System.out.println("Невозможно исполнить скрипт из файла, так как файл недоступен для чтения.");
         }
-        if(!isScriptFileGood) {
+        if (!isScriptFileGood) {
             System.out.println("Файл со скриптом заполнен неверно!");
         } else {
             System.out.println("Скрипт из указанного файла успешно исполнен!");
@@ -357,10 +368,10 @@ public class Collection {
      */
     public void removeGreater(String key) {
         double xCoordinate = Double.parseDouble(key);
-        Iterator<Entry<Integer, Person>> iterator = People.entrySet().iterator();
+        Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
 
         while (iterator.hasNext()) {
-            Entry<Integer, Person> entry = iterator.next();
+            Entry<String, Person> entry = iterator.next();
             if (entry.getValue().getCoordinates().getX() > xCoordinate) {
                 People.remove(entry.getKey());
             }
@@ -376,8 +387,8 @@ public class Collection {
      * @param value
      */
     public void replaceIfLower(String key, String value) {
-        if (People.get(Integer.valueOf(key)).getHeight() > Integer.parseInt(value)) {
-            People.get(Integer.valueOf(key)).setHeight(Integer.parseInt(value));
+        if (People.get(key).getHeight() > Integer.parseInt(value)) {
+            People.get(key).setHeight(Integer.parseInt(value));
             System.out.println("Рост успешно изменен!");
         } else {
             System.out.println("Рост не был изменен, поскольку введенное значение не меньше текущего.");
@@ -390,13 +401,13 @@ public class Collection {
      * @param key
      */
     public void removeGreaterKey(String key) {
-        Integer inputKey = Integer.valueOf(key);
+        String inputKey = key;
 
-        Iterator<Entry<Integer, Person>> iterator = People.entrySet().iterator();
+        Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
 
         while (iterator.hasNext()) {
-            Entry<Integer, Person> entry = iterator.next();
-            if (entry.getKey() > inputKey) {
+            Entry<String, Person> entry = iterator.next();
+            if (entry.getKey().compareTo(inputKey) > 0) {
                 People.remove(entry.getKey());
             }
         }
@@ -408,14 +419,14 @@ public class Collection {
      * Сортировка по дате создания.
      */
     public void groupCountingByCreationDate() {
-        Iterator<Entry<Integer, Person>> iterator = People.entrySet().iterator();
+        Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
         TreeMap<java.time.LocalDateTime, Integer> creationDateGrouping = new TreeMap<>();
         java.time.LocalDateTime currentCreationDate;
         boolean currentDateFound = false;
         Integer tempValue;
 
         while (iterator.hasNext()) {
-            Entry<Integer, Person> entry = iterator.next();
+            Entry<String, Person> entry = iterator.next();
             currentCreationDate = entry.getValue().getCreationDate();
 
             Iterator<Entry<java.time.LocalDateTime, Integer>> iterator1 = creationDateGrouping.entrySet().iterator();
@@ -453,7 +464,7 @@ public class Collection {
      * @param location
      */
     public void countGreaterThanLocation(String location) {
-        Iterator<Entry<Integer, Person>> iterator = People.entrySet().iterator();
+        Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
         Long inputLocation = Long.valueOf(location);
 
         int amount = 0;
@@ -466,7 +477,7 @@ public class Collection {
             switch (fieldInput) {
                 case "x":
                     while (iterator.hasNext()) {
-                        Entry<Integer, Person> entry = iterator.next();
+                        Entry<String, Person> entry = iterator.next();
                         if (entry.getValue().getLocation().getX() > inputLocation) {
                             amount++;
                         }
@@ -475,7 +486,7 @@ public class Collection {
                     break;
                 case "y":
                     while (iterator.hasNext()) {
-                        Entry<Integer, Person> entry = iterator.next();
+                        Entry<String, Person> entry = iterator.next();
                         if (entry.getValue().getLocation().getY() > inputLocation) {
                             amount++;
                         }
@@ -484,7 +495,7 @@ public class Collection {
                     break;
                 case "z":
                     while (iterator.hasNext()) {
-                        Entry<Integer, Person> entry = iterator.next();
+                        Entry<String, Person> entry = iterator.next();
                         if (entry.getValue().getLocation().getZ() > inputLocation) {
                             amount++;
                         }
@@ -506,14 +517,14 @@ public class Collection {
      * @param name
      */
     public void filterStartsWithName(String name) {
-        Iterator<Entry<Integer, Person>> iterator = People.entrySet().iterator();
+        Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
         String regex = "^" + name + ".*";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher;
         boolean anythingFound = false;
 
         while (iterator.hasNext()) {
-            Entry<Integer, Person> entry = iterator.next();
+            Entry<String, Person> entry = iterator.next();
             matcher = pattern.matcher(entry.getValue().getName());
             if (matcher.lookingAt()) {
                 System.out.println(entry.getValue().getId());
@@ -528,7 +539,7 @@ public class Collection {
 
     }
 
-    public void setPeople(TreeMap<Integer, Person> people) {
+    public void setPeople(TreeMap<String, Person> people) {
         People = people;
     }
 

@@ -16,7 +16,9 @@ public class Main {
 
             Collection collection = new Collection();
 
-            Parser.parseFrom(collection);
+            Parser parser = new Parser();
+            collection.setParser(parser);
+            parser.parseFrom(collection);
 
             while (workingStatus) {
                 currentCommand = consoleIn.nextLine();

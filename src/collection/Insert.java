@@ -1,5 +1,6 @@
 package collection;
 
+import parser.Parser;
 import person.Coordinates;
 import person.Country;
 import person.Location;
@@ -11,18 +12,17 @@ import java.util.TreeMap;
 public class Insert {
     private boolean isValueWritten;
     private Person person;
-    private TreeMap<Integer, Person> People;
+    private TreeMap<String, Person> People;
     private Scanner parameterInput;
     private Coordinates coordinates;
     private Location location;
     private String key;
 
-    public Insert(String key, TreeMap<Integer, Person> People) {
+    public Insert(String key, TreeMap<String, Person> People) {
         parameterInput = new Scanner(System.in);
         this.key = key;
         person = new Person();
         this.People = People;
-        person.setId(Integer.valueOf(key));
         coordinates = new Coordinates();
         location = new Location();
     }
@@ -30,8 +30,8 @@ public class Insert {
     /**
      * Генерация id.
      */
-    public void id() {
-        Randomizer idRandomizer = new Randomizer();
+    public void id(Parser parser) {
+        Randomizer idRandomizer = parser.getRandomizer();
         person.setId(idRandomizer.generateId(People));
     }
 
@@ -222,6 +222,6 @@ public class Insert {
     }
 
     public void applyToCollection() {
-        People.put(Integer.valueOf(key), person);
+        People.put(key, person);
     }
 }
