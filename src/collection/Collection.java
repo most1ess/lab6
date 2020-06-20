@@ -456,7 +456,11 @@ public class Collection {
             }
         }
 
-        System.out.println("Элементы коллекции успешно рассортированы по дате создания!");
+        if(People.size() > 0) {
+            System.out.println("Элементы коллекции успешно рассортированы по дате создания!");
+        } else {
+            System.out.println("Коллекция пуста!");
+        }
 
         Iterator<Entry<java.time.LocalDateTime, Integer>> iterator1 = creationDateGrouping.entrySet().iterator();
         while (iterator1.hasNext()) {
@@ -478,8 +482,10 @@ public class Collection {
 
         while (iterator.hasNext()) {
             Entry<String, Person> entry = iterator.next();
-            if ((entry.getValue().getLocation().getX() + entry.getValue().getLocation().getY() + entry.getValue().getLocation().getZ()) > inputLocation) {
-                amount++;
+            if(entry.getValue().getLocation() != null) {
+                if ((entry.getValue().getLocation().getX() + entry.getValue().getLocation().getY() + entry.getValue().getLocation().getZ()) > inputLocation) {
+                    amount++;
+                }
             }
         }
 
