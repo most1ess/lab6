@@ -14,10 +14,6 @@ import java.util.regex.Matcher;
 
 public class Collection {
 
-    public Parser getParser() {
-        return parser;
-    }
-
     public void setParser(Parser parser) {
         this.parser = parser;
     }
@@ -32,7 +28,7 @@ public class Collection {
     /**
      * Выборка команды, исходя из ввода пользователя.
      *
-     * @param input
+     * @param input - строка, введенная пользователем
      */
     public void commandDefiner(String[] input) {
         try {
@@ -149,16 +145,20 @@ public class Collection {
             }
             System.out.println("Вес: " + entry.getValue().getWeight());
             System.out.println("Национальность: " + entry.getValue().getNationality());
-            System.out.println("Местоположение по X: " + entry.getValue().getLocation().getX());
-            System.out.println("Местоположение по Y: " + entry.getValue().getLocation().getY());
-            System.out.println("Местоположение по Z: " + entry.getValue().getLocation().getZ());
+            if (entry.getValue().getLocation() == null) {
+                System.out.println("Местоположение: null");
+            } else {
+                System.out.println("Местоположение по X: " + entry.getValue().getLocation().getX());
+                System.out.println("Местоположение по Y: " + entry.getValue().getLocation().getY());
+                System.out.println("Местоположение по Z: " + entry.getValue().getLocation().getZ());
+            }
         }
     }
 
     /**
      * Вставка нового элемента в коллекцию.
      *
-     * @param key
+     * @param key - ключ, введенный пользователем
      */
     public void insert(String key) {
         Iterator<Map.Entry<String, Person>> iterator = People.entrySet().iterator();
@@ -180,11 +180,9 @@ public class Collection {
             insert.birthday();
             insert.weight();
             insert.nationality();
-            insert.xLocation();
-            insert.yLocation();
-            insert.zLocation();
+            insert.location();
 
-            insert.genCreationDate();   
+            insert.genCreationDate();
             insert.applyToCollection();
 
             System.out.println("Объект успешно добавлен!");
@@ -197,7 +195,7 @@ public class Collection {
     /**
      * Обновление элемента коллекции.
      *
-     * @param key
+     * @param key - ключ, введенный пользователем
      */
     public void update(String key) {
 
@@ -213,9 +211,7 @@ public class Collection {
             update.birthday();
             update.weight();
             update.nationality();
-            update.xLocation();
-            update.yLocation();
-            update.zLocation();
+            update.location();
 
             update.genCreationDate();
             update.applyToCollection();
@@ -227,7 +223,7 @@ public class Collection {
     /**
      * Удаление элемента по ключу.
      *
-     * @param key
+     * @param key - ключ, введенный пользователем
      */
     public void removeKey(String key) {
         if (!People.containsKey(key)) {
@@ -243,11 +239,8 @@ public class Collection {
      */
     public void clear() {
         try {
-            Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, Person> entry = iterator.next();
-                People.remove(entry.getKey());
-            }
+            People.clear();
+            System.out.println("Коллекция успешно очищена.");
         } catch (NoSuchElementException e) {
             System.out.println("Невозможно очистить коллекцию. Она уже чиста.");
         }
@@ -264,7 +257,7 @@ public class Collection {
     /**
      * Исполнение скрипта из файла.
      *
-     * @param file
+     * @param file - имя файла, введенное пользователем
      */
     public void executeScript(String file) {
         File scriptFile = new File(file);
@@ -292,7 +285,7 @@ public class Collection {
                             Person person = new Person();
                             Randomizer idRandomizer = new Randomizer();
 
-                            person.setId(idRandomizer.generateId(People));
+                            person.setId(idRandomizer.generateId());
                             line = bufferedReader.readLine();
                             person.setName(line);
                             line = bufferedReader.readLine();
@@ -310,7 +303,11 @@ public class Collection {
                             }
                             person.setHeight(Integer.parseInt(line));
                             line = bufferedReader.readLine();
-                            person.setBirthday(line);
+                            if (line.equals("")) {
+                                person.setBirthday(null);
+                            } else {
+                                person.setBirthday(line);
+                            }
                             line = bufferedReader.readLine();
                             if (Long.parseLong(line) <= 0) {
                                 isScriptFileGood = false;
@@ -320,11 +317,15 @@ public class Collection {
                             person.setNationality(Country.valueOf(line));
                             line = bufferedReader.readLine();
                             Location location = new Location();
-                            location.setX(Long.valueOf(line));
-                            line = bufferedReader.readLine();
-                            location.setY(Float.parseFloat(line));
-                            line = bufferedReader.readLine();
-                            location.setZ(Double.parseDouble(line));
+                            if(line == null) {
+                                location = null;
+                            } else {
+                                location.setX(Long.valueOf(line));
+                                line = bufferedReader.readLine();
+                                location.setY(Float.parseFloat(line));
+                                line = bufferedReader.readLine();
+                                location.setZ(Double.parseDouble(line));
+                            }
                             person.setLocation(location);
 
                             person.setCreationDate(java.time.LocalDateTime.now().withNano(0).withSecond(0).toString().replace("T", " "));
@@ -340,23 +341,27 @@ public class Collection {
 
                 if (!scriptExecutionStatus) {
                     System.out.println("Скрипт из указанного файла не был исполнен корректно!");
+                    isScriptFileGood = false;
                 }
             } catch (FileNotFoundException e) {
                 System.out.println("Файл не найден!");
                 scriptExecutionStatus = false;
+                isScriptFileGood = false;
             } catch (IOException e) {
-                System.out.println("Во время чтения файла произошла неизвестная ошибка.");
+                System.out.println("Во время чтения файла произошла ошибка.");
                 scriptExecutionStatus = false;
+                isScriptFileGood = false;
             } catch (NumberFormatException | java.time.format.DateTimeParseException | NullPointerException e) {
                 System.out.println("Файл со скриптом заполнен неверно.");
                 scriptExecutionStatus = false;
+                isScriptFileGood = false;
             }
         } else {
             System.out.println("Невозможно исполнить скрипт из файла, так как файл недоступен для чтения.");
+            scriptExecutionStatus = false;
+            isScriptFileGood = false;
         }
-        if (!isScriptFileGood) {
-            System.out.println("Файл со скриптом заполнен неверно!");
-        } else {
+        if (isScriptFileGood) {
             System.out.println("Скрипт из указанного файла успешно исполнен!");
         }
     }
@@ -364,7 +369,7 @@ public class Collection {
     /**
      * Удаление всех элементов коллекции, значение поля xCoordinate которых превышает текущее..
      *
-     * @param key
+     * @param key - ключ, введенный пользователем
      */
     public void removeGreater(String key) {
         double xCoordinate = Double.parseDouble(key);
@@ -383,8 +388,8 @@ public class Collection {
     /**
      * Замена роста на введенное значение, если оно больше текущего.
      *
-     * @param key
-     * @param value
+     * @param key   - ключ, введенный пользоваталем
+     * @param value - значение, введенное пользователем
      */
     public void replaceIfLower(String key, String value) {
         if (People.get(key).getHeight() > Integer.parseInt(value)) {
@@ -398,21 +403,20 @@ public class Collection {
     /**
      * Удаление всех элементов, ключ которых больше введенного.
      *
-     * @param key
+     * @param key - ключ, введенный пользователем
      */
     public void removeGreaterKey(String key) {
-        String inputKey = key;
 
         Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
 
         while (iterator.hasNext()) {
             Entry<String, Person> entry = iterator.next();
-            if (entry.getKey().compareTo(inputKey) > 0) {
+            if (entry.getKey().compareTo(key) > 0) {
                 People.remove(entry.getKey());
             }
         }
 
-        System.out.println("Все объекты, ключ которых превышает " + inputKey + ", успешно удалены!");
+        System.out.println("Все объекты, ключ которых превышает " + key + ", успешно удалены!");
     }
 
     /**
@@ -461,60 +465,28 @@ public class Collection {
     /**
      * Подсчет количества элементов с большим значением поля location.
      *
-     * @param location
+     * @param location - значение поля location, введенное пользователем
      */
     public void countGreaterThanLocation(String location) {
         Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
-        Long inputLocation = Long.valueOf(location);
+        long inputLocation = Long.parseLong(location);
 
         int amount = 0;
-        boolean isComparingDone = false;
 
-        Scanner scanner = new Scanner(System.in);
-        while (!isComparingDone) {
-            System.out.print("Введите поле объекта location, по которому вы хотите провести сравнение (x, y, z): ");
-            String fieldInput = scanner.nextLine();
-            switch (fieldInput) {
-                case "x":
-                    while (iterator.hasNext()) {
-                        Entry<String, Person> entry = iterator.next();
-                        if (entry.getValue().getLocation().getX() > inputLocation) {
-                            amount++;
-                        }
-                    }
-                    isComparingDone = true;
-                    break;
-                case "y":
-                    while (iterator.hasNext()) {
-                        Entry<String, Person> entry = iterator.next();
-                        if (entry.getValue().getLocation().getY() > inputLocation) {
-                            amount++;
-                        }
-                    }
-                    isComparingDone = true;
-                    break;
-                case "z":
-                    while (iterator.hasNext()) {
-                        Entry<String, Person> entry = iterator.next();
-                        if (entry.getValue().getLocation().getZ() > inputLocation) {
-                            amount++;
-                        }
-                    }
-                    isComparingDone = true;
-                    break;
-                default:
-                    System.out.println("Введенное вами значение должно быть одним из (x, y, z).");
-                    break;
+        while (iterator.hasNext()) {
+            Entry<String, Person> entry = iterator.next();
+            if ((entry.getValue().getLocation().getX() + entry.getValue().getLocation().getY() + entry.getValue().getLocation().getZ()) > inputLocation) {
+                amount++;
             }
         }
 
-        System.out.println("Количество элементов со значением поля location, больших чем " + location + ": " + amount);
+        System.out.println("Количество элементов с суммой координат location, больших чем " + location + ": " + amount);
     }
 
     /**
      * Поиск элементов с именем, начинающимся на введенные буквы.
      *
-     * @param name
+     * @param name - имя, введенное пользователем
      */
     public void filterStartsWithName(String name) {
         Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();

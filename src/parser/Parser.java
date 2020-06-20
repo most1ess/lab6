@@ -1,13 +1,10 @@
 package parser;
 
-import collection.*;
 
 import java.io.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.io.IOException;
@@ -21,20 +18,19 @@ import collection.Collection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
 import java.util.Map.Entry;
 
 import person.*;
 import org.w3c.dom.NodeList;
 import collection.Randomizer;
+
 public class Parser {
 
     public Randomizer getRandomizer() {
         return randomizer;
-    }
-
-    public void setRandomizer(Randomizer randomizer) {
-        this.randomizer = randomizer;
     }
 
     private Randomizer randomizer = new Randomizer();
@@ -42,7 +38,7 @@ public class Parser {
     /**
      * Парсинг из файла.
      *
-     * @param collection
+     * @param collection - коллекция для парсинга
      */
     public void parseFrom(Collection collection) {
         try {
@@ -55,16 +51,20 @@ public class Parser {
                 System.out.println("Переменная окружения пуста! Коллекция не может быть загружена.");
                 return;
             }
-            File file = readFile(fileName);
+            //String fileName = "data.xml";
+            File file = new File(fileName);
             TreeMap<String, Person> treeMap = new TreeMap<>();
             String key = "";
             randomizer.setIdMax(0);
             if (file.canRead()) {
                 DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                Document document = documentBuilder.parse(file);
+                String a = readFile(file);
+                StringReader stringReader = new StringReader(a);
+                InputSource inputSource = new InputSource(stringReader);
+                Document document = documentBuilder.parse(inputSource);
                 Node root = document.getDocumentElement();
 
-                String textContent = "";
+                String textContent;
 
                 NodeList people = root.getChildNodes();
 
@@ -86,7 +86,7 @@ public class Parser {
                             String currentTagName = personProp.getNodeName().toUpperCase();
                             switch (currentTagName) {
                                 case "KEY":
-                                    if (textContent.equals("") || Integer.parseInt(textContent) > 50000 || Integer.parseInt(textContent) < 1) {
+                                    if (textContent.equals("")) {
                                         System.out.println("Ключ одного из элементов имеет недопустимое значение! Коллекция не может быть загружена.");
                                         return;
                                     }
@@ -122,10 +122,9 @@ public class Parser {
                                         e.setId(Integer.valueOf(textContent));
                                         ids[currenIdAmount] = e.getId();
                                         currenIdAmount++;
-                                        if(randomizer.getIdMax() < e.getId()) {
+                                        if (randomizer.getIdMax() < e.getId()) {
                                             randomizer.setIdMax(e.getId());
                                         }
-                                        System.out.println(randomizer.getIdMax());
                                     } else {
                                         return;
                                     }
@@ -208,34 +207,38 @@ public class Parser {
                                 case "LOCATION":
                                     NodeList locationField = personProp.getChildNodes();
 
-                                    Node locationXField = locationField.item(0);
-                                    textContent = locationXField.getTextContent();
-                                    if (textContent.equals("")) {
-                                        System.out.println("Местоположение по х у одного из элементов отсутствует! Коллекция не может быть загружена.");
-                                        return;
-                                    }
-                                    location.setX(Long.valueOf(textContent));
+                                    if (locationField.getLength() > 1) {
+                                        Node locationXField = locationField.item(0);
+                                        textContent = locationXField.getTextContent();
+                                        if (textContent.equals("")) {
+                                            System.out.println("Местоположение по х у одного из элементов отсутствует! Коллекция не может быть загружена.");
+                                            return;
+                                        }
+                                        location.setX(Long.valueOf(textContent));
 
-                                    Node locationYField = locationField.item(1);
-                                    textContent = locationYField.getTextContent();
-                                    if (textContent.equals("")) {
-                                        System.out.println("Местоположение по у у одного из элементов отсутствует! Коллекция не может быть загружена.");
-                                        return;
-                                    }
-                                    location.setY(Float.parseFloat(textContent));
+                                        Node locationYField = locationField.item(1);
+                                        textContent = locationYField.getTextContent();
+                                        if (textContent.equals("")) {
+                                            System.out.println("Местоположение по у у одного из элементов отсутствует! Коллекция не может быть загружена.");
+                                            return;
+                                        }
+                                        location.setY(Float.parseFloat(textContent));
 
-                                    Node locationZField = locationField.item(2);
-                                    textContent = locationZField.getTextContent();
-                                    if (textContent.equals("")) {
-                                        System.out.println("Местоположение по z у одного из элементов отсутствует! Коллекция не может быть загружена.");
-                                        return;
-                                    }
-                                    location.setZ(Double.parseDouble(textContent));
+                                        Node locationZField = locationField.item(2);
+                                        textContent = locationZField.getTextContent();
+                                        if (textContent.equals("")) {
+                                            System.out.println("Местоположение по z у одного из элементов отсутствует! Коллекция не может быть загружена.");
+                                            return;
+                                        }
+                                        location.setZ(Double.parseDouble(textContent));
 
-                                    e.setLocation(location);
+                                        e.setLocation(location);
+                                    } else {
+                                        e.setLocation(null);
+                                    }
                             }
                         }
-                        treeMap.put(key.toString(), e);
+                        treeMap.put(key, e);
                     }
                 }
                 collection.setPeople(treeMap);
@@ -250,43 +253,52 @@ public class Parser {
         }
     }
 
-    private File readFile(String fileName) {
-        File tempFile = new File("/tmp/virtualReadingFile");
-        try {
-            Scanner scanner = new Scanner(new File(fileName));
-            String fileInString = "";
+    private String readFile(File file) {
+        String fileInString = "";
 
-            while(scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                fileInString = fileInString + line;
-            }
-            scanner.close();
+        StringBuilder stringBuilder = new StringBuilder(fileInString);
 
-            Files.write(Paths.get("/tmp/virtualReadingFile"), fileInString.getBytes());
+        try (FileReader fr = new FileReader(file); BufferedReader br = new BufferedReader(fr)) {
+            String line;
+            do {
+                line = br.readLine();
+                if (line != null) {
+                    stringBuilder.append(line);
+                }
+            } while (line != null);
         } catch (FileNotFoundException e) {
-            System.out.println("Файл не найден! yes");
+            System.out.println("Файл не найден!");
         } catch (IOException e) {
             System.out.println("Во время чтения файла произошла ошибка!");
         }
-        return tempFile;
+        return stringBuilder.toString();
     }
 
     /**
      * Парсинг в файл.
      *
-     * @param treeMap
+     * @param treeMap - коллекция
      */
     public void parseTo(TreeMap<String, Person> treeMap) {
         try {
+            if(System.getenv("FILE_PATH") == null) {
+                System.out.println("Переменная окружения отсутствует! Коллекция не может быть загружена.");
+                return;
+            }
             String fileName = System.getenv("FILE_PATH");
-            File file = new File("data.xml");
+            if(fileName.equals("")) {
+                System.out.println("Переменная окружения пуста! Коллекция не может быть загружена.");
+                return;
+            }
+            //String fileName = "data.xml";
+            File file = new File(fileName);
             if (file.canWrite()) {
-                PrintWriter fileCleaner = new PrintWriter(file);
-                fileCleaner.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><ROOT></ROOT>");
-                fileCleaner.close();
+                try (FileWriter fw = new FileWriter(file); BufferedWriter bw = new BufferedWriter(fw)) {
+                    bw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><ROOT></ROOT>");
+                }
 
                 DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                Document document = documentBuilder.parse("data.xml");
+                Document document = documentBuilder.parse(fileName);
 
                 Node root = document.getDocumentElement();
 
@@ -297,7 +309,7 @@ public class Parser {
                     Element person = document.createElement("PERSON");
 
                     Element key = document.createElement("KEY");
-                    key.setTextContent(entry.getKey().toString());
+                    key.setTextContent(entry.getKey());
                     person.appendChild(key);
 
                     Element id = document.createElement("ID");
@@ -342,15 +354,19 @@ public class Parser {
                     person.appendChild(nationality);
 
                     Element location = document.createElement("LOCATION");
-                    Element xLocation = document.createElement("X");
-                    xLocation.setTextContent(entry.getValue().getLocation().getX().toString());
-                    location.appendChild(xLocation);
-                    Element yLocation = document.createElement("Y");
-                    yLocation.setTextContent(Float.toString(entry.getValue().getLocation().getY()));
-                    location.appendChild(yLocation);
-                    Element zLocation = document.createElement("Z");
-                    zLocation.setTextContent(Double.toString(entry.getValue().getLocation().getZ()));
-                    location.appendChild(zLocation);
+                    if (entry.getValue().getLocation() == null) {
+                        location.setTextContent("null");
+                    } else {
+                        Element xLocation = document.createElement("X");
+                        xLocation.setTextContent(entry.getValue().getLocation().getX().toString());
+                        location.appendChild(xLocation);
+                        Element yLocation = document.createElement("Y");
+                        yLocation.setTextContent(Float.toString(entry.getValue().getLocation().getY()));
+                        location.appendChild(yLocation);
+                        Element zLocation = document.createElement("Z");
+                        zLocation.setTextContent(Double.toString(entry.getValue().getLocation().getZ()));
+                        location.appendChild(zLocation);
+                    }
                     person.appendChild(location);
 
                     root.appendChild(person);
@@ -358,46 +374,52 @@ public class Parser {
                 try {
                     Transformer tr = TransformerFactory.newInstance().newTransformer();
                     DOMSource source = new DOMSource(document);
-                    FileOutputStream fos = new FileOutputStream("/tmp/virtualWritingFile");
-                    StreamResult result = new StreamResult(fos);
-                    tr.transform(source, result);
-                    writeFile(fileName);
+                    try (FileOutputStream fos = new FileOutputStream("temp.xml")) {
+                        StreamResult result = new StreamResult(fos);
+                        tr.transform(source, result);
+                    }
+                    if (writeFile(fileName)) {
+                        System.out.println("Во время чтения файла произошла ошибка или файл не найден!");
+                    } else {
+                        System.out.println("Коллекция успешно сохранена в файл!");
+                        return;
+                    }
                 } catch (TransformerException | IOException e) {
-                    e.printStackTrace(System.out);
+                    System.out.println("Во время записи в файл произошла ошибка.");
                 }
                 System.out.println("Коллекция успешно сохранена в файл!");
+
             } else {
                 System.out.println("Операция сохранения невозможна, потому что файл недоступен для записи.");
             }
-        } catch (ParserConfigurationException ex) {
+        } catch (ParserConfigurationException | SAXException ex) {
             System.out.println("Файл поврежден!");
-        } catch (SAXException ex) {
-            System.out.println("Файл поврежден!");
-        } catch (IOException ex) {
-            System.out.println("Файл не найден!");
+        } catch (IOException e) {
+            System.out.println("Во время записи в файл произошла ошибка.");
         }
     }
 
-    private static void writeFile(String fileName) {
+    private static boolean writeFile(String fileName) {
         File file = new File(fileName);
-        try {
-            Scanner scanner = new Scanner(new File("/tmp/virtualWritingFile"));
-            String fileInString = "";
-
-            while(scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                fileInString = fileInString + line;
-            }
-            scanner.close();
-
-            FileWriter fw = new FileWriter(file);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write(fileInString);
-            bw.close();
-        } catch (FileNotFoundException e) {
-            System.out.println("Файл не найден! yes");
+        String fileInString = "";
+        StringBuilder stringBuilder = new StringBuilder(fileInString);
+        try (Scanner scanner = new Scanner(new File("temp.xml"))) {
+            String line;
+            do {
+                line = scanner.nextLine();
+                if (line != null) {
+                    stringBuilder.append(line);
+                }
+            } while (line != null);
         } catch (IOException e) {
-            System.out.println("Во время чтения файла произошла ошибка!");
+            return true;
         }
+
+        try (FileWriter fw = new FileWriter(file); BufferedWriter bw = new BufferedWriter(fw)) {
+            bw.write(stringBuilder.toString());
+        } catch (IOException e) {
+            return true;
+        }
+        return false;
     }
 }

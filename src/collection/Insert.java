@@ -5,6 +5,7 @@ import person.Coordinates;
 import person.Country;
 import person.Location;
 import person.Person;
+
 import java.time.LocalDateTime;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -32,7 +33,7 @@ public class Insert {
      */
     public void id(Parser parser) {
         Randomizer idRandomizer = parser.getRandomizer();
-        person.setId(idRandomizer.generateId(People));
+        person.setId(idRandomizer.generateId());
     }
 
     /**
@@ -169,9 +170,36 @@ public class Insert {
     }
 
     /**
+     * Ввод местоположения.
+     */
+    public void location() {
+        isValueWritten = false;
+        while (!isValueWritten) {
+            System.out.println("Введите местоположение.");
+            System.out.print("Хотите ли вы, чтобы местоположение имело нулевое значение? (y/n) ");
+            Scanner scanner = new Scanner(System.in);
+            String gnida = scanner.nextLine();
+            switch (gnida) {
+                case "y":
+                    person.setLocation(null);
+                    isValueWritten = true;
+                    break;
+                case "n":
+                    xLocation();
+                    yLocation();
+                    zLocation();
+                    isValueWritten = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    /**
      * Ввод местоположения по х.
      */
-    public void xLocation() {
+    private void xLocation() {
         isValueWritten = false;
         while (!isValueWritten) {
             try {
@@ -187,7 +215,7 @@ public class Insert {
     /**
      * Ввод местоположения по у.
      */
-    public void yLocation() {
+    private void yLocation() {
         isValueWritten = false;
         while (!isValueWritten) {
             try {
@@ -203,7 +231,7 @@ public class Insert {
     /**
      * Ввод местоположения по z.
      */
-    public void zLocation() {
+    private void zLocation() {
         isValueWritten = false;
         while (!isValueWritten) {
             try {

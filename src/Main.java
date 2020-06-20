@@ -1,5 +1,3 @@
-package main;
-
 import collection.Collection;
 import parser.*;
 import java.util.NoSuchElementException;

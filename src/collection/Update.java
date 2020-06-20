@@ -167,10 +167,35 @@ public class Update {
         }
     }
 
+    public void location() {
+        isValueWritten = false;
+        while(!isValueWritten) {
+            System.out.println("Текущее значение полей поля location: " + location.getX() + ", " + location.getY() + ", " + location.getZ());
+            System.out.println("Введите местоположение.");
+            System.out.print("Хотите ли вы, чтобы местоположение было нулевым? (y/n) ");
+            Scanner scanner = new Scanner(System.in);
+            String gnida = scanner.nextLine();
+            switch(gnida) {
+                case "y":
+                    person.setLocation(null);
+                    isValueWritten = true;
+                    break;
+                case "n":
+                    xLocation();
+                    yLocation();
+                    zLocation();
+                    isValueWritten = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
     /**
      * Ввод местоположения по х.
      */
-    public void xLocation() {
+    private void xLocation() {
         isValueWritten = false;
         while(!isValueWritten) {
             try {
@@ -187,7 +212,7 @@ public class Update {
     /**
      * Ввод местоположения по у.
      */
-    public void yLocation() {
+    private void yLocation() {
         isValueWritten = false;
         while(!isValueWritten) {
             try {
@@ -204,7 +229,7 @@ public class Update {
     /**
      * Ввод местоположения по z.
      */
-    public void zLocation() {
+    private void zLocation() {
         isValueWritten = false;
         while(!isValueWritten) {
             try {
