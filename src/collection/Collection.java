@@ -467,6 +467,7 @@ public class Collection {
             Entry<java.time.LocalDateTime, Integer> entry1 = iterator1.next();
             System.out.println(entry1.getKey() + ": " + entry1.getValue() + " элементов");
         }
+
     }
 
     /**
