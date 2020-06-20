@@ -15,6 +15,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import collection.Collection;
+import error.ErrorCheck;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -58,8 +59,10 @@ public class Parser {
             randomizer.setIdMax(0);
             if (file.canRead()) {
                 DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                String a = readFile(file);
-                StringReader stringReader = new StringReader(a);
+                ErrorCheck error = new ErrorCheck();
+                documentBuilder.setErrorHandler(error);
+                String readFile = readFile(file);
+                StringReader stringReader = new StringReader(readFile);
                 InputSource inputSource = new InputSource(stringReader);
                 Document document = documentBuilder.parse(inputSource);
                 Node root = document.getDocumentElement();
@@ -302,93 +305,97 @@ public class Parser {
 
                 Node root = document.getDocumentElement();
 
-                Iterator<Entry<String, Person>> iterator = treeMap.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry<String, Person> entry = iterator.next();
+                if (treeMap.size() > 0) {
+                    Iterator<Entry<String, Person>> iterator = treeMap.entrySet().iterator();
+                    while (iterator.hasNext()) {
+                        Map.Entry<String, Person> entry = iterator.next();
 
-                    Element person = document.createElement("PERSON");
+                        Element person = document.createElement("PERSON");
 
-                    Element key = document.createElement("KEY");
-                    key.setTextContent(entry.getKey());
-                    person.appendChild(key);
+                        Element key = document.createElement("KEY");
+                        key.setTextContent(entry.getKey());
+                        person.appendChild(key);
 
-                    Element id = document.createElement("ID");
-                    id.setTextContent(entry.getValue().getId().toString());
-                    person.appendChild(id);
+                        Element id = document.createElement("ID");
+                        id.setTextContent(entry.getValue().getId().toString());
+                        person.appendChild(id);
 
-                    Element name = document.createElement("NAME");
-                    name.setTextContent(entry.getValue().getName());
-                    person.appendChild(name);
+                        Element name = document.createElement("NAME");
+                        name.setTextContent(entry.getValue().getName());
+                        person.appendChild(name);
 
-                    Element coordinates = document.createElement("COORDINATES");
-                    Element xCoordinate = document.createElement("X");
-                    xCoordinate.setTextContent(Double.toString(entry.getValue().getCoordinates().getX()));
-                    coordinates.appendChild(xCoordinate);
-                    Element yCoordinate = document.createElement("Y");
-                    yCoordinate.setTextContent(Double.toString(entry.getValue().getCoordinates().getY()));
-                    coordinates.appendChild(yCoordinate);
-                    person.appendChild(coordinates);
+                        Element coordinates = document.createElement("COORDINATES");
+                        Element xCoordinate = document.createElement("X");
+                        xCoordinate.setTextContent(Double.toString(entry.getValue().getCoordinates().getX()));
+                        coordinates.appendChild(xCoordinate);
+                        Element yCoordinate = document.createElement("Y");
+                        yCoordinate.setTextContent(Double.toString(entry.getValue().getCoordinates().getY()));
+                        coordinates.appendChild(yCoordinate);
+                        person.appendChild(coordinates);
 
-                    Element creationDate = document.createElement("CREATIONDATE");
-                    creationDate.setTextContent(entry.getValue().getCreationDate().toString().replaceAll("T", " "));
-                    person.appendChild(creationDate);
+                        Element creationDate = document.createElement("CREATIONDATE");
+                        creationDate.setTextContent(entry.getValue().getCreationDate().toString().replaceAll("T", " "));
+                        person.appendChild(creationDate);
 
-                    Element height = document.createElement("HEIGHT");
-                    height.setTextContent(Integer.toString(entry.getValue().getHeight()));
-                    person.appendChild(height);
+                        Element height = document.createElement("HEIGHT");
+                        height.setTextContent(Integer.toString(entry.getValue().getHeight()));
+                        person.appendChild(height);
 
-                    Element birthday = document.createElement("BIRTHDAY");
-                    if (entry.getValue().getBirthday() == null) {
-                        birthday.setTextContent("");
-                    } else {
-                        birthday.setTextContent(entry.getValue().getBirthday().toString().replaceAll("T", " "));
+                        Element birthday = document.createElement("BIRTHDAY");
+                        if (entry.getValue().getBirthday() == null) {
+                            birthday.setTextContent("");
+                        } else {
+                            birthday.setTextContent(entry.getValue().getBirthday().toString().replaceAll("T", " "));
+                        }
+                        person.appendChild(birthday);
+
+                        Element weight = document.createElement("WEIGHT");
+                        weight.setTextContent(Long.toString(entry.getValue().getWeight()));
+                        person.appendChild(weight);
+
+                        Element nationality = document.createElement("NATIONALITY");
+                        nationality.setTextContent(entry.getValue().getNationality().toString());
+                        person.appendChild(nationality);
+
+                        Element location = document.createElement("LOCATION");
+                        if (entry.getValue().getLocation() == null) {
+                            location.setTextContent("null");
+                        } else {
+                            Element xLocation = document.createElement("X");
+                            xLocation.setTextContent(entry.getValue().getLocation().getX().toString());
+                            location.appendChild(xLocation);
+                            Element yLocation = document.createElement("Y");
+                            yLocation.setTextContent(Float.toString(entry.getValue().getLocation().getY()));
+                            location.appendChild(yLocation);
+                            Element zLocation = document.createElement("Z");
+                            zLocation.setTextContent(Double.toString(entry.getValue().getLocation().getZ()));
+                            location.appendChild(zLocation);
+                        }
+                        person.appendChild(location);
+
+                        root.appendChild(person);
                     }
-                    person.appendChild(birthday);
-
-                    Element weight = document.createElement("WEIGHT");
-                    weight.setTextContent(Long.toString(entry.getValue().getWeight()));
-                    person.appendChild(weight);
-
-                    Element nationality = document.createElement("NATIONALITY");
-                    nationality.setTextContent(entry.getValue().getNationality().toString());
-                    person.appendChild(nationality);
-
-                    Element location = document.createElement("LOCATION");
-                    if (entry.getValue().getLocation() == null) {
-                        location.setTextContent("null");
-                    } else {
-                        Element xLocation = document.createElement("X");
-                        xLocation.setTextContent(entry.getValue().getLocation().getX().toString());
-                        location.appendChild(xLocation);
-                        Element yLocation = document.createElement("Y");
-                        yLocation.setTextContent(Float.toString(entry.getValue().getLocation().getY()));
-                        location.appendChild(yLocation);
-                        Element zLocation = document.createElement("Z");
-                        zLocation.setTextContent(Double.toString(entry.getValue().getLocation().getZ()));
-                        location.appendChild(zLocation);
+                    try {
+                        Transformer tr = TransformerFactory.newInstance().newTransformer();
+                        DOMSource source = new DOMSource(document);
+                        try (FileOutputStream fos = new FileOutputStream("temp.xml")) {
+                            StreamResult result = new StreamResult(fos);
+                            tr.transform(source, result);
+                        }
+                        if (writeFile(fileName)) {
+                            System.out.println("Во время чтения файла произошла ошибка или файл не найден!");
+                        } else {
+                            System.out.println("Коллекция успешно сохранена в файл!");
+                            return;
+                        }
+                    } catch (TransformerException | IOException e) {
+                        System.out.println("Во время записи в файл произошла ошибка.");
                     }
-                    person.appendChild(location);
+                    System.out.println("Коллекция успешно сохранена в файл!");
 
-                    root.appendChild(person);
+                } else {
+                    System.out.println("Коллекция пуста, поэтому в файл был записан только корневой тег!");
                 }
-                try {
-                    Transformer tr = TransformerFactory.newInstance().newTransformer();
-                    DOMSource source = new DOMSource(document);
-                    try (FileOutputStream fos = new FileOutputStream("temp.xml")) {
-                        StreamResult result = new StreamResult(fos);
-                        tr.transform(source, result);
-                    }
-                    if (writeFile(fileName)) {
-                        System.out.println("Во время чтения файла произошла ошибка или файл не найден!");
-                    } else {
-                        System.out.println("Коллекция успешно сохранена в файл!");
-                        return;
-                    }
-                } catch (TransformerException | IOException e) {
-                    System.out.println("Во время записи в файл произошла ошибка.");
-                }
-                System.out.println("Коллекция успешно сохранена в файл!");
-
             } else {
                 System.out.println("Операция сохранения невозможна, потому что файл недоступен для записи.");
             }

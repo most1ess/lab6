@@ -114,7 +114,7 @@ public class Update {
         while(!isValueWritten) {
             try {
                 System.out.println("Текущий День Рождения: " + person.getBirthday());
-                System.out.print("Введите День Рождения (в формате YYYY-MM-DD HH:MM): ");
+                System.out.print("Введите День Рождения (в формате YYYY-MM-DD HH:MM) (может быть пустым): ");
                 String birthday = parameterInput.nextLine();
                 if (birthday.equals("")) {
                     person.setBirthday(null);
@@ -187,6 +187,7 @@ public class Update {
                     isValueWritten = true;
                     break;
                 default:
+                    System.out.println("Введенное вами значение должно быть y или n.");
                     break;
             }
         }

@@ -98,14 +98,14 @@ public class Collection {
         System.out.println("help - вывод справки по доступным командам");
         System.out.println("info - вывод информации о коллекции");
         System.out.println("show - вывод всех элементов коллекции");
-        System.out.println("insert <key> - добавление нового элемента с заданным ключом (ключ должен находиться в пределах от 1 до 50000");
+        System.out.println("insert <key> - добавление нового элемента с заданным ключом");
         System.out.println("remove_key <key> - удаление элемента по его ключу");
         System.out.println("clear - очистка коллекции");
         System.out.println("save - сохренение коллекции в файл");
         System.out.println("execute_script <file_name> - исполнение скрипта из указанного файла");
         System.out.println("exit - завершение программы (без записи в файл)");
         System.out.println("remove_greater <value> - удаление из коллекции всех элементов, в которых координата Х меньше введенной");
-        System.out.println("replace_if_lower <key> <value> - замена значения роста по ключу, если новое меньше старого (ключ должен находиться в пределах от 1 до 50000");
+        System.out.println("replace_if_lower <key> <value> - замена значения роста по ключу, если новое меньше старого");
         System.out.println("remove_greater_key <value> - удаление всех элементов коллекции, в которых координата Х превышает введенную");
         System.out.println("group_counting_by_creation_date - группировка данных по значению поля creation_date и вывод сгруппированных данных");
         System.out.println("count_greater_than_location <location> - вывод количества элементов, значение поля location которых больше заданного");
@@ -152,6 +152,9 @@ public class Collection {
                 System.out.println("Местоположение по Y: " + entry.getValue().getLocation().getY());
                 System.out.println("Местоположение по Z: " + entry.getValue().getLocation().getZ());
             }
+        }
+        if(People.size() > 0) {
+            System.out.println("Коллекция пуста!");
         }
     }
 
