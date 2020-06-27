@@ -5,8 +5,13 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        try {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                System.out.println("Отключение программы.");
+            }
+        });
 
+        try {
             boolean workingStatus = true;
             Scanner consoleIn = new Scanner(System.in);
             String currentCommand;

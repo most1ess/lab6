@@ -82,7 +82,7 @@ public class Parser {
 
                     Node person = people.item(i);
                     NodeList personProps = person.getChildNodes();
-                    if (personProps.getLength() > 0) {
+                    if (personProps.getLength() == 10 || personProps.getLength() == 12) {
                         for (byte peopleCounter = 0; peopleCounter < personProps.getLength(); peopleCounter++) {
                             Node personProp = personProps.item(peopleCounter);
                             textContent = personProp.getTextContent();
@@ -242,6 +242,8 @@ public class Parser {
                             }
                         }
                         treeMap.put(key, e);
+                    } else {
+                        System.out.println("Некоторые элементы из файла не были записаны в коллекцию, так как представлены в файле не верно.");
                     }
                 }
                 collection.setPeople(treeMap);
@@ -300,7 +302,10 @@ public class Parser {
                     bw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?><ROOT></ROOT>");
                 }
 
+
                 DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                ErrorCheck error = new ErrorCheck();
+                documentBuilder.setErrorHandler(error);
                 Document document = documentBuilder.parse(fileName);
 
                 Node root = document.getDocumentElement();
@@ -417,7 +422,7 @@ public class Parser {
                 if (line != null) {
                     stringBuilder.append(line);
                 }
-            } while (line != null);
+            } while (scanner.hasNextLine());
         } catch (IOException e) {
             return true;
         }

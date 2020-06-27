@@ -24,6 +24,7 @@ public class Collection {
     private java.time.LocalDateTime creationDate;
     private boolean scriptExecutionStatus = false;
     private byte executeIterationsCounter = 0;
+    private byte outsideScriptCounter = 0;
 
     /**
      * Выборка команды, исходя из ввода пользователя.
@@ -58,6 +59,7 @@ public class Collection {
                     save();
                     break;
                 case "execute_script":
+                    outsideScriptCounter++;
                     executeScript(input[1]);
                     executeIterationsCounter = 0;
                     break;
@@ -153,7 +155,7 @@ public class Collection {
                 System.out.println("Местоположение по Z: " + entry.getValue().getLocation().getZ());
             }
         }
-        if(People.size() > 0) {
+        if (People.size() == 0) {
             System.out.println("Коллекция пуста!");
         }
     }
@@ -265,102 +267,110 @@ public class Collection {
     public void executeScript(String file) {
         File scriptFile = new File(file);
         boolean isScriptFileGood = true;
-        if (scriptFile.canRead()) {
-            executeIterationsCounter++;
-            if (executeIterationsCounter > 5) {
-                System.out.println("Скрипт зацикливается, поэтому его исполнение было остановлено.");
-                return;
-            }
-            scriptExecutionStatus = true;
-            try {
-                FileReader fileReader = new FileReader(file);
-                BufferedReader bufferedReader = new BufferedReader(fileReader);
-                String line = bufferedReader.readLine();
-
-                String[] separatedLine;
-
-                while (line != null & isScriptFileGood) {
-                    separatedLine = line.trim().split(" ");
-                    switch (separatedLine[0]) {
-                        case "update":
-                            People.remove(separatedLine[1]);
-                        case "insert":
-                            Person person = new Person();
-                            Randomizer idRandomizer = new Randomizer();
-
-                            person.setId(idRandomizer.generateId());
-                            line = bufferedReader.readLine();
-                            person.setName(line);
-                            line = bufferedReader.readLine();
-                            Coordinates coordinates = new Coordinates();
-                            coordinates.setX(Double.parseDouble(line));
-                            line = bufferedReader.readLine();
-                            if (Double.parseDouble(line) > 355) {
-                                isScriptFileGood = false;
-                            }
-                            coordinates.setY(Double.parseDouble(line));
-                            person.setCoordinates(coordinates);
-                            line = bufferedReader.readLine();
-                            if (Integer.parseInt(line) <= 0) {
-                                isScriptFileGood = false;
-                            }
-                            person.setHeight(Integer.parseInt(line));
-                            line = bufferedReader.readLine();
-                            if (line.equals("")) {
-                                person.setBirthday(null);
-                            } else {
-                                person.setBirthday(line);
-                            }
-                            line = bufferedReader.readLine();
-                            if (Long.parseLong(line) <= 0) {
-                                isScriptFileGood = false;
-                            }
-                            person.setWeight(Long.parseLong(line));
-                            line = bufferedReader.readLine();
-                            person.setNationality(Country.valueOf(line));
-                            line = bufferedReader.readLine();
-                            Location location = new Location();
-                            if(line == null) {
-                                location = null;
-                            } else {
-                                location.setX(Long.valueOf(line));
-                                line = bufferedReader.readLine();
-                                location.setY(Float.parseFloat(line));
-                                line = bufferedReader.readLine();
-                                location.setZ(Double.parseDouble(line));
-                            }
-                            person.setLocation(location);
-
-                            person.setCreationDate(java.time.LocalDateTime.now().withNano(0).withSecond(0).toString().replace("T", " "));
-
-                            People.put(separatedLine[1], person);
-                            break;
-                        default:
-                            commandDefiner(separatedLine);
-                            break;
-                    }
-                    line = bufferedReader.readLine();
+        if (outsideScriptCounter < 3) {
+            if (scriptFile.canRead()) {
+                executeIterationsCounter++;
+                if (executeIterationsCounter > 5) {
+                    System.out.println("Скрипт зацикливается, поэтому его исполнение было остановлено.");
+                    return;
                 }
+                scriptExecutionStatus = true;
+                try {
+                    FileReader fileReader = new FileReader(file);
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+                    String line = bufferedReader.readLine();
 
-                if (!scriptExecutionStatus) {
-                    System.out.println("Скрипт из указанного файла не был исполнен корректно!");
+                    String[] separatedLine;
+
+                    while (line != null & isScriptFileGood) {
+                        separatedLine = line.trim().split(" ");
+                        switch (separatedLine[0]) {
+                            case "update":
+                                People.remove(separatedLine[1]);
+                            case "insert":
+                                Person person = new Person();
+                                Randomizer idRandomizer = new Randomizer();
+
+                                person.setId(idRandomizer.generateId());
+                                line = bufferedReader.readLine();
+                                person.setName(line);
+                                line = bufferedReader.readLine();
+                                Coordinates coordinates = new Coordinates();
+                                coordinates.setX(Double.parseDouble(line));
+                                line = bufferedReader.readLine();
+                                if (Double.parseDouble(line) > 355) {
+                                    isScriptFileGood = false;
+                                }
+                                coordinates.setY(Double.parseDouble(line));
+                                person.setCoordinates(coordinates);
+                                line = bufferedReader.readLine();
+                                if (Integer.parseInt(line) <= 0) {
+                                    isScriptFileGood = false;
+                                }
+                                person.setHeight(Integer.parseInt(line));
+                                line = bufferedReader.readLine();
+                                if (line.equals("")) {
+                                    person.setBirthday(null);
+                                } else {
+                                    person.setBirthday(line);
+                                }
+                                line = bufferedReader.readLine();
+                                if (Long.parseLong(line) <= 0) {
+                                    isScriptFileGood = false;
+                                }
+                                person.setWeight(Long.parseLong(line));
+                                line = bufferedReader.readLine();
+                                person.setNationality(Country.valueOf(line));
+                                line = bufferedReader.readLine();
+                                Location location = new Location();
+                                if (line == null) {
+                                    location = null;
+                                } else {
+                                    location.setX(Long.valueOf(line));
+                                    line = bufferedReader.readLine();
+                                    location.setY(Float.parseFloat(line));
+                                    line = bufferedReader.readLine();
+                                    location.setZ(Double.parseDouble(line));
+                                }
+                                person.setLocation(location);
+
+                                person.setCreationDate(java.time.LocalDateTime.now().withNano(0).withSecond(0).toString().replace("T", " "));
+
+                                People.put(separatedLine[1], person);
+                                break;
+                            default:
+                                commandDefiner(separatedLine);
+                                break;
+                        }
+                        line = bufferedReader.readLine();
+                    }
+
+                    if (!scriptExecutionStatus) {
+                        System.out.println("Скрипт из указанного файла не был исполнен корректно!");
+                        isScriptFileGood = false;
+                        outsideScriptCounter = 0;
+                    }
+                } catch (FileNotFoundException e) {
+                    System.out.println("Файл не найден!");
+                    scriptExecutionStatus = false;
+                    isScriptFileGood = false;
+                } catch (IOException e) {
+                    System.out.println("Во время чтения файла произошла ошибка.");
+                    scriptExecutionStatus = false;
+                    isScriptFileGood = false;
+                } catch (NumberFormatException | java.time.format.DateTimeParseException | NullPointerException e) {
+                    System.out.println("Файл со скриптом заполнен неверно.");
+                    scriptExecutionStatus = false;
                     isScriptFileGood = false;
                 }
-            } catch (FileNotFoundException e) {
-                System.out.println("Файл не найден!");
-                scriptExecutionStatus = false;
-                isScriptFileGood = false;
-            } catch (IOException e) {
-                System.out.println("Во время чтения файла произошла ошибка.");
-                scriptExecutionStatus = false;
-                isScriptFileGood = false;
-            } catch (NumberFormatException | java.time.format.DateTimeParseException | NullPointerException e) {
-                System.out.println("Файл со скриптом заполнен неверно.");
+            } else {
+                System.out.println("Невозможно исполнить скрипт из файла, так как файл недоступен для чтения или не найден.");
                 scriptExecutionStatus = false;
                 isScriptFileGood = false;
             }
         } else {
-            System.out.println("Невозможно исполнить скрипт из файла, так как файл недоступен для чтения.");
+            outsideScriptCounter = 0;
+            System.out.println("Выполнение скрипта зацикливается, поэтому исполнения скрипта было остановлено.");
             scriptExecutionStatus = false;
             isScriptFileGood = false;
         }
@@ -377,15 +387,20 @@ public class Collection {
     public void removeGreater(String key) {
         double xCoordinate = Double.parseDouble(key);
         Iterator<Entry<String, Person>> iterator = People.entrySet().iterator();
+        boolean hasRemoved = false;
 
         while (iterator.hasNext()) {
+            hasRemoved = true;
             Entry<String, Person> entry = iterator.next();
             if (entry.getValue().getCoordinates().getX() > xCoordinate) {
                 People.remove(entry.getKey());
             }
         }
-
-        System.out.println("Все искомые объекты успешно удалены!");
+        if (hasRemoved) {
+            System.out.println("Все искомые объекты успешно удалены!");
+        } else {
+            System.out.println("Опа! А удалять то нечего!");
+        }
     }
 
     /**
@@ -456,7 +471,7 @@ public class Collection {
             }
         }
 
-        if(People.size() > 0) {
+        if (People.size() > 0) {
             System.out.println("Элементы коллекции успешно рассортированы по дате создания!");
         } else {
             System.out.println("Коллекция пуста!");
@@ -483,7 +498,7 @@ public class Collection {
 
         while (iterator.hasNext()) {
             Entry<String, Person> entry = iterator.next();
-            if(entry.getValue().getLocation() != null) {
+            if (entry.getValue().getLocation() != null) {
                 if ((entry.getValue().getLocation().getX() + entry.getValue().getLocation().getY() + entry.getValue().getLocation().getZ()) > inputLocation) {
                     amount++;
                 }
